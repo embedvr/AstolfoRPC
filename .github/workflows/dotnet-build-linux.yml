@@ -19,8 +19,7 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --no-restore
       - name: Package Executable
-        run: dotnet publish --configuration Release --no-build --no-restore --output ./publish
         uses: actions/upload-artifact@v3
         with:
           name: executable
-          path: ./publish
+          path: ./AstolfoRPC/bin/Release/net6.0/publish
