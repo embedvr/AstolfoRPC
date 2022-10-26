@@ -1,25 +1,32 @@
 ﻿using AstolfoRPC;
 using DiscordRPC;
-using Lyrics;
 using DiscordRPC.Logging;
 
 DiscordRpcClient client;
 
-Console.WriteLine("i have too much time on my hands");
+Console.WriteLine("astolforpc v1.0, press ctrl+c to exit");
 
 if (!File.Exists("lyrics.json"))
 {
     Console.WriteLine("missing lyrics.json");
-    Environment.Exit(5);
+    Environment.Exit(905);
 }
+
+if (!File.Exists("config.json"))
+{
+    Console.WriteLine("missing config.json");
+    Environment.Exit(904);
+}
+
+var config = Config.Welcome.FromJson(File.ReadAllText("config.json"));
 
 PresenceStateList states = new PresenceStateList();
 var lyrics = Lyrics.Welcome.FromJson(File.ReadAllText("lyrics.json"));
+Console.WriteLine("{0} events. loading.", lyrics.Events.Length);
+
 for (int j = 0; j < lyrics.Events.Length; j++)
 {
-    if (j == 69) break;
-    Console.WriteLine(j);
-    Console.WriteLine(lyrics.Events[j].Segs[0].Utf8);
+    if (j == lyrics.Events.Length - 1) break;
     if(j == lyrics.Events.Length)
     {
         states.Add(new PresenceState()
@@ -39,24 +46,15 @@ for (int j = 0; j < lyrics.Events.Length; j++)
     
 }
 
-client = new DiscordRpcClient("515926861797392394");
+Console.WriteLine("events loaded");
+
+client = new DiscordRpcClient(config.ApplicationId);
 client.Logger = new ConsoleLogger()  { Level = LogLevel.Warning };
 client.OnReady += (sender, e) =>
 {
     Console.WriteLine("Connected to {0}#{1}", e.User.Username, e.User.Discriminator);
 };
 client.Initialize();
-
-client.SetPresence(new RichPresence()
-{
-    Details = "busy being your favorite girl",
-    State = "i have too much time on my hands",
-    Assets = new Assets()
-    {
-        LargeImageKey = "38",
-        LargeImageText = "lol"
-    }
-});
 
 while (true)
 {
@@ -65,11 +63,11 @@ while (true)
         client.SetPresence(new RichPresence()
         {
             Details = state.Text,
-            State = "AstolfoRPC v1",
+            State = config.Subtext,
             Assets = new Assets()
             {
-                LargeImageKey = "38",
-                LargeImageText = "song: i wanna be a girl - mafumafu"
+                LargeImageKey = config.ImageKey.ToString(),
+                LargeImageText = config.ImageText
             }
         });
         Thread.Sleep(state.Delay);
